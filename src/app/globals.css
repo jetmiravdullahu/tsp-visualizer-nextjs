@@ -1,10 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-border;
+  html {
+    @apply font-ptSerif;
+  }
+
+  /* Scroll bar stylings */
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    @apply bg-secondary/40
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
   }
 
   :root {
@@ -27,5 +50,6 @@
     --border: 217.2 32.6% 17.5%; /* hsl(217.2, 32.6%, 17.5%) */
     --input: 217.2 32.6% 17.5%; /* hsl(217.2, 32.6%, 17.5%) */
     --ring: 224.3 76.3% 48%; /* hsl(224.3, 76.3%, 48%) */
+    --radius: 0.5rem;
   }
 }

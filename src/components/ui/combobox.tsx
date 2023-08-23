@@ -69,7 +69,7 @@ export const Combobox: React.FC<ComboProps> = ({
           <ChevronsUpDown className={`ml-2 h-4 w-4 shrink-0 opacity-50`} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={`p-0 ${popoverClass}`}>
+      <PopoverContent className={`p-0 max-h-[20rem] overflow-y-auto ${popoverClass}`}>
         <Command>
           <CommandInput placeholder={inputPlaceholder} />
           <CommandEmpty>No framework found.</CommandEmpty>

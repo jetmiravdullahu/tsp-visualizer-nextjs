@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning={true} className={inter.className + " relative text-foreground bg-background"}>
+      <body suppressHydrationWarning={true} className={"relative text-foreground bg-background font-pt"}>
         <div className="min-h-screen ">{children}</div>
         <div className="min-h-screen absolute inset-0">{hud}</div>
       </body>

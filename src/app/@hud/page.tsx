@@ -35,6 +35,34 @@ const options = [
       },
     ],
   },
+  {
+    label: "Group 2",
+    value: "2",
+    children: [
+      {
+        label: "Option 3",
+        value: "option 3",
+      },
+      {
+        label: "Option 4",
+        value: "option 4",
+      },
+    ],
+  },
+  {
+    label: "Group 2",
+    value: "2",
+    children: [
+      {
+        label: "Option 3",
+        value: "option 3",
+      },
+      {
+        label: "Option 4",
+        value: "option 4",
+      },
+    ],
+  },
 ];
 
 export default function Home() {
@@ -96,6 +124,7 @@ export default function Home() {
           <Slider
             defaultValue={[50]}
             value={slider}
+            
             max={100}
             step={1}
             onValueChange={onSlideChange}

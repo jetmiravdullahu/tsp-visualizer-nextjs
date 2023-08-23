@@ -2,7 +2,7 @@ export default function Home() {
 
   return (
     <main className="">
-      Main
+      Main Option 1
     </main>
   );
 }
