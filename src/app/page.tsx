@@ -1,8 +1,11 @@
-export default function Home() {
+import Map from "@/components/Map";
 
+export default function Home() {
   return (
-    <main className="">
-      Main Option 1
+    <main className="h-full">
+      <div className="h-full">
+        <Map />
+      </div>
     </main>
   );
 }
