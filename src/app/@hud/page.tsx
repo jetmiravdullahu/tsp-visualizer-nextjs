@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, ChangeEvent, FormEventHandler, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Slider } from "@/components/ui/slider";
-import { Check, Pause, Play, RotateCw } from "lucide-react";
+import { MousePointer2, Check, Pause, Play, RotateCw } from "lucide-react";
 import {
   getAlgorithm,
   getDelay,
@@ -14,16 +13,13 @@ import {
   getNodes,
 } from "../../store/main/selectors";
 import {
-  addEdge,
   resetNodes,
   setAlgorithm,
   setDelay,
   toggleDefiningPoints,
   togglePlay,
 } from "../../store/main/mainSlice";
-import { LngLat as LngLatType } from "react-map-gl";
 import useNearestNeighbor from "@/solvers/heuristic-construction/nearestNeighbor";
-import { LngLat } from "mapbox-gl";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 
 const options = [
@@ -40,6 +36,7 @@ const options = [
 ];
 
 export default function Hud() {
+
   const dispatch = useAppDispatch();
 
   const isPlaying = useAppSelector(getIsPlaying);
@@ -61,7 +58,9 @@ export default function Hud() {
 
   const onStart = async () => {
     dispatch(togglePlay());
-    await executeNearestNeighborWithDelays();
+    if (!isPlaying) {
+      await executeNearestNeighborWithDelays();
+    }
   };
   return (
     <main>
@@ -71,7 +70,7 @@ export default function Hud() {
           className="bg-background/90"
           disabled={isPlaying}
         >
-          {!isDefiningPoints ? <Play /> : <Pause />}
+          {!isDefiningPoints ? <MousePointer2 /> : <Check />}
         </Button>
       </div>
       <div className="absolute top-10 left-[50%] -translate-x-1/2">
@@ -107,7 +106,7 @@ export default function Hud() {
           <Button
             onClick={onStart}
             className="bg-transparent text-foreground hover:text-primary hover:bg-secondary/50 h-full"
-            disabled={isDefiningPoints}
+            disabled={isDefiningPoints || !nodes.length}
           >
             {!isPlaying ? <Play /> : <Pause />}
           </Button>

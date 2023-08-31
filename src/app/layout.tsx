@@ -5,6 +5,7 @@ import { useState } from "react";
 import "./globals.css";
 import type { Metadata } from "next";
 import { ReduxProvider } from "@/store/provider";
+import { MapProvider } from "react-map-gl";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -36,8 +37,10 @@ export default function RootLayout({
         className={"relative text-foreground bg-background font-pt"}
       >
         <ReduxProvider>
-          <div className="h-screen">{children}</div>
-          {hud}
+          <MapProvider>
+            <div className="h-screen">{children}</div>
+            {hud}
+          </MapProvider>
         </ReduxProvider>
       </body>
     </html>

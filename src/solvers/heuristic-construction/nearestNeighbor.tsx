@@ -3,6 +3,7 @@ import { addEdge } from "@/store/main/mainSlice";
 import { getDelay, getIsPlaying, getNodes } from "@/store/main/selectors";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { LngLat } from "mapbox-gl";
+import { wait } from "..";
 
 type Props = {
   nodes: LngLat[];
@@ -43,10 +44,6 @@ const useNearestNeighbor = () => {
     dispatch(addEdge(path[0]));
 
     return path;
-  }
-
-  function wait(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   return { executeNearestNeighborWithDelays };

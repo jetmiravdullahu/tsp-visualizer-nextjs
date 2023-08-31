@@ -1,11 +1,12 @@
 "use client";
 import { useState } from "react";
-import MapBox, {
+import {
   CircleLayer,
   Layer,
   LineLayer,
   Source,
   LngLat as LngLatType,
+  Map as MapBox,
 } from "react-map-gl";
 import { LngLat } from "mapbox-gl";
 
@@ -45,6 +46,7 @@ const Map: React.FC<Props> = ({ nodes, onClick, edges, isPlaying }) => {
     },
     properties: {
       id: index,
+      color: index === 0 ? "blue" : "red",
     },
   }));
 
@@ -57,12 +59,14 @@ const Map: React.FC<Props> = ({ nodes, onClick, edges, isPlaying }) => {
   const nodesStyle: CircleLayer = {
     id: "point",
     type: "circle",
+    // 'source-layer': 'landuse',
     paint: {
       "circle-radius": 8,
-      "circle-color": "red",
+      "circle-color": ["get", "color"],
     },
-    source: "test",
+    source: "node",
   };
+
   const edgesCollection: FeatureCollection = {
     type: "FeatureCollection",
     features: [
@@ -70,7 +74,50 @@ const Map: React.FC<Props> = ({ nodes, onClick, edges, isPlaying }) => {
         type: "Feature",
         geometry: {
           type: "LineString",
-          coordinates: edges.map((edge) => [edge.lng, edge.lat]),
+          coordinates: edges.slice(0, -1).map((edge) => [edge.lng, edge.lat]),
+        },
+        properties: {
+          color: "red",
+        },
+      },
+      {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            edges && [
+              edges[edges.length - 1]?.lng,
+              edges[edges.length - 1]?.lat,
+            ],
+            edges && [
+              edges[edges.length - 2]?.lng,
+              edges[edges.length - 2]?.lat,
+            ],
+          ],
+        },
+        properties: {
+          color: "blue",
+        },
+      },
+    ],
+  };
+  const lastEdgeCollection: FeatureCollection = {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            edges && [
+              edges[edges.length - 1]?.lng,
+              edges[edges.length - 1]?.lat,
+            ],
+            edges && [
+              edges[edges.length - 2]?.lng,
+              edges[edges.length - 2]?.lat,
+            ],
+          ],
         },
         properties: {},
       },
@@ -82,15 +129,24 @@ const Map: React.FC<Props> = ({ nodes, onClick, edges, isPlaying }) => {
     type: "line",
     paint: {
       "line-width": 8,
-      "line-color": "red",
+      "line-color": ["get", "color"],
     },
-    source: "test",
+    source: "edge",
   };
 
-  console.log(edges);
+  const lastEdgeStyle: LineLayer = {
+    id: "lastEdge",
+    type: "line",
+    paint: {
+      "line-width": 8,
+      "line-color": "blue",
+    },
+    source: "lastEdge",
+  };
 
   return (
     <MapBox
+      id="map"
       mapboxAccessToken={token}
       style={{ width: "100%", height: "100%" }}
       mapStyle="mapbox://styles/jetmir99/cllwgfxz200ho01qxdexgbunn"
@@ -101,6 +157,7 @@ const Map: React.FC<Props> = ({ nodes, onClick, edges, isPlaying }) => {
       <Source id="nodes" type="geojson" data={nodesCollection}>
         <Layer {...nodesStyle} />
       </Source>
+
       {isPlaying && (
         <Source id="edges" type="geojson" data={edgesCollection}>
           <Layer {...edgesStyle} />
