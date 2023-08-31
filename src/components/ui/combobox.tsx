@@ -70,6 +70,7 @@ export const Combobox: React.FC<ComboProps> = ({
         }
       }
     }
+    return placeholder
   };
   const renderGroupNames = (option: IOption) => {
     if (searchValue === undefined || searchValue === "") {
