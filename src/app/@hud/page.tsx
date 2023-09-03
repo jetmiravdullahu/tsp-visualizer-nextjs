@@ -7,20 +7,23 @@ import { MousePointer2, Check, Pause, Play, RotateCw } from "lucide-react";
 import {
   getAlgorithm,
   getDelay,
-  getEdges,
+  getDistance,
   getIsDefiningPoints,
   getIsPlaying,
   getNodes,
 } from "../../store/main/selectors";
 import {
-  resetNodes,
+  setAccumulator,
   setAlgorithm,
   setDelay,
+  setTimeStamp,
   toggleDefiningPoints,
   togglePlay,
 } from "../../store/main/mainSlice";
-import useNearestNeighbor from "@/solvers/heuristic-construction/nearestNeighbor";
 import { useAppDispatch, useAppSelector } from "@/store/store";
+import { useRef } from "react";
+import { TSP } from "@/solvers";
+import { isValidAlgorithm } from "@/helpers";
 
 const options = [
   {
@@ -29,14 +32,58 @@ const options = [
     children: [
       {
         label: "Nearest Neighbor",
-        value: "1",
+        value: TSP.NEAREST_NEIGHBOR,
+      },
+      {
+        label: "Nearest Insertion",
+        value: TSP.NEAREST_INSERTION,
+      },
+      {
+        label: "Random Insertion",
+        value: TSP.RANDOM_INSERTION,
+      },
+      {
+        label: "Furthest Insertion",
+        value: TSP.FURTHEST_INSERTION,
+      },
+      {
+        label: "Cheapest Insertion",
+        value: TSP.CHEAPEST_INSERTION,
+      },
+      {
+        label: "Convex Hull",
+        value: TSP.CONVEX_HULL,
+      },
+    ],
+  },
+  {
+    label: "Heuristic Improvement",
+    value: "2",
+    children: [
+      {
+        label: "Two Opt Inversion",
+        value: TSP.TWO_OPT_INVERSION,
+      },
+    ],
+  },
+  {
+    label: "Exhaustive",
+    value: "3",
+    children: [
+      {
+        label: "Dynamic Programming",
+        value: TSP.DYNAMIC_PROGRAMMING,
+      },
+      {
+        label: "Depth First Search",
+        value: TSP.DEPTH_FIRST_SEARCH,
       },
     ],
   },
 ];
 
 export default function Hud() {
-
+  const worker = useRef();
   const dispatch = useAppDispatch();
 
   const isPlaying = useAppSelector(getIsPlaying);
@@ -44,31 +91,39 @@ export default function Hud() {
   const delay = useAppSelector(getDelay);
   const algorithm = useAppSelector(getAlgorithm);
   const nodes = useAppSelector(getNodes);
-  const edges = useAppSelector(getEdges);
-
-  const { executeNearestNeighborWithDelays } = useNearestNeighbor();
+  const distance = useAppSelector(getDistance);
 
   const onChange = (e: string) => {
-    dispatch(setAlgorithm(e));
+    if (isValidAlgorithm(e)) dispatch(setAlgorithm(e));
   };
 
   const onSlideChange = (event: number[]) => {
     dispatch(setDelay(event[0]));
   };
 
-  const onStart = async () => {
+  const onStart = () => {
     dispatch(togglePlay());
-    if (!isPlaying) {
-      await executeNearestNeighborWithDelays();
-    }
   };
+  const onReset = () => {
+    dispatch(setDelay(undefined));
+    dispatch(setTimeStamp(0));
+    dispatch(setAccumulator(undefined));
+  };
+
+  const onToggleDefiningPoints = () => {
+    dispatch(toggleDefiningPoints());
+    dispatch(setDelay(undefined));
+    dispatch(setTimeStamp(0));
+    dispatch(setAccumulator(undefined));
+    
+  }
+
   return (
     <main>
       <div className="absolute top-10 left-10">
         <Button
-          onClick={() => dispatch(toggleDefiningPoints())}
+          onClick={onToggleDefiningPoints}
           className="bg-background/90"
-          disabled={isPlaying}
         >
           {!isDefiningPoints ? <MousePointer2 /> : <Check />}
         </Button>
@@ -93,7 +148,7 @@ export default function Hud() {
         <div className="w-full flex justify-between">
           <div>EVALUATING:</div>
 
-          <span>1</span>
+          <span>{distance} KM</span>
         </div>
         <div className="w-full flex justify-between">
           <div>RUNNING FOR:</div>
@@ -111,7 +166,7 @@ export default function Hud() {
             {!isPlaying ? <Play /> : <Pause />}
           </Button>
           <Button
-            onClick={() => dispatch(resetNodes())}
+            onClick={onReset}
             className="bg-transparent text-foreground hover:text-primary hover:bg-secondary/50 h-full"
             disabled={isDefiningPoints || isPlaying}
           >
@@ -121,10 +176,10 @@ export default function Hud() {
         <div>
           <Slider
             defaultValue={[0]}
-            value={[delay]}
+            value={[delay || 0]}
             max={250}
             min={0}
-            step={25}
+            step={1}
             disabled={isDefiningPoints}
             onValueChange={onSlideChange}
             className="w-48 cursor-pointer"

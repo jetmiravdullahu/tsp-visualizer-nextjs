@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CircleLayer,
   Layer,
@@ -15,22 +15,30 @@ import { Button } from "../ui/button";
 
 interface Props {
   nodes: LngLatType[];
-  edges: LngLatType[];
-  isPlaying: boolean;
+  accumulator: LngLatType[];
   onClick: (node: LngLatType) => void;
 }
 
-const Map: React.FC<Props> = ({ nodes, onClick, edges, isPlaying }) => {
+const Map: React.FC<Props> = ({ nodes, onClick, accumulator }) => {
   const token =
     "pk.eyJ1IjoiamV0bWlyOTkiLCJhIjoiY2xsdzdoMXg3MjZkeDNxcGUzZTJmNTV6aiJ9.HBu2-RjAt9hkDOA2qn9kLg";
 
   const [viewState, setViewState] = useState({
-    longitude: 20.844354,
-    latitude: 42.543911,
-    zoom: 8.1,
+    // longitude: 20.844354,
+    // latitude: 42.543911,
+    // zoom: 8.1,
+
+    longitude: -98.5795,
+    latitude: 39.8283,
+    zoom: 4,
   });
-  const [customPoints, setCustomPoints] = useState(false);
-  const [play, setPlay] = useState(false);
+  const [edges, setEdges] = useState<LngLatType[]>([]);
+
+  useEffect(() => {
+    if (accumulator && accumulator.length > 1) {
+      setEdges(accumulator);
+    }
+  }, [accumulator]);
 
   const onClickHandler = (e: mapboxgl.MapLayerMouseEvent) => {
     const clickedCoordinates = new LngLat(e.lngLat.lng, e.lngLat.lat);
@@ -61,7 +69,7 @@ const Map: React.FC<Props> = ({ nodes, onClick, edges, isPlaying }) => {
     type: "circle",
     // 'source-layer': 'landuse',
     paint: {
-      "circle-radius": 8,
+      "circle-radius": 4,
       "circle-color": ["get", "color"],
     },
     source: "node",
@@ -128,7 +136,7 @@ const Map: React.FC<Props> = ({ nodes, onClick, edges, isPlaying }) => {
     id: "line",
     type: "line",
     paint: {
-      "line-width": 8,
+      "line-width": 4,
       "line-color": ["get", "color"],
     },
     source: "edge",
@@ -138,7 +146,7 @@ const Map: React.FC<Props> = ({ nodes, onClick, edges, isPlaying }) => {
     id: "lastEdge",
     type: "line",
     paint: {
-      "line-width": 8,
+      "line-width": 4,
       "line-color": "blue",
     },
     source: "lastEdge",
@@ -158,11 +166,9 @@ const Map: React.FC<Props> = ({ nodes, onClick, edges, isPlaying }) => {
         <Layer {...nodesStyle} />
       </Source>
 
-      {isPlaying && (
-        <Source id="edges" type="geojson" data={edgesCollection}>
-          <Layer {...edgesStyle} />
-        </Source>
-      )}
+      <Source id="edges" type="geojson" data={edgesCollection}>
+        <Layer {...edgesStyle} />
+      </Source>
     </MapBox>
   );
 };
