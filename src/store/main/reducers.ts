@@ -6,8 +6,14 @@ import { TSP } from "@/solvers";
 
 export const togglePlay = (state: MainState) => {
   state.playing = !state.playing;
-  !state.playing ? (state.delay = undefined) : (state.delay = 1);
+  // !state.playing ? (state.delay = 0) : (state.delay = 1);
 };
+
+export const reset = (state: MainState) => {
+  state.edges = [];
+  // !state.playing ? (state.delay = 0) : (state.delay = 1);
+};
+
 export const toggleDefiningPoints = (state: MainState) => {
   state.definingPoints = !state.definingPoints;
   if (state.definingPoints) {
@@ -46,10 +52,7 @@ export const resetProgress = (state: MainState) => {
   state.edges = [];
 };
 
-export const setDelay = (
-  state: MainState,
-  action: PayloadAction<number | undefined>
-) => {
+export const setDelay = (state: MainState, action: PayloadAction<number>) => {
   state.delay = action.payload;
 };
 export const setAlgorithm = (

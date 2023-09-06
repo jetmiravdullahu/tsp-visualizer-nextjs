@@ -19,6 +19,7 @@ import {
   setTimeStamp,
   toggleDefiningPoints,
   togglePlay,
+  reset,
 } from "../../store/main/mainSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { useRef } from "react";
@@ -83,7 +84,6 @@ const options = [
 ];
 
 export default function Hud() {
-  const worker = useRef();
   const dispatch = useAppDispatch();
 
   const isPlaying = useAppSelector(getIsPlaying);
@@ -105,29 +105,18 @@ export default function Hud() {
     dispatch(togglePlay());
   };
   const onReset = () => {
-    dispatch(setDelay(undefined));
-    dispatch(setTimeStamp(0));
-    dispatch(setAccumulator(undefined));
+    dispatch(reset());
   };
 
   const onToggleDefiningPoints = () => {
     dispatch(toggleDefiningPoints());
-    dispatch(setDelay(undefined));
+    dispatch(setDelay(0));
     dispatch(setTimeStamp(0));
     dispatch(setAccumulator(undefined));
-    
-  }
+  };
 
   return (
     <main>
-      <div className="absolute top-10 left-10">
-        <Button
-          onClick={onToggleDefiningPoints}
-          className="bg-background/90"
-        >
-          {!isDefiningPoints ? <MousePointer2 /> : <Check />}
-        </Button>
-      </div>
       <div className="absolute top-10 left-[50%] -translate-x-1/2">
         <Combobox
           options={options}
@@ -168,7 +157,7 @@ export default function Hud() {
           <Button
             onClick={onReset}
             className="bg-transparent text-foreground hover:text-primary hover:bg-secondary/50 h-full"
-            disabled={isDefiningPoints || isPlaying}
+            disabled={isDefiningPoints}
           >
             <RotateCw />
           </Button>

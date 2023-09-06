@@ -1,5 +1,7 @@
 "use client";
+
 import Map from "@/components/Map";
+import { Button } from "@/components/ui/button";
 import useInterval from "@/hooks/useInterfal";
 import {
   TSP,
@@ -10,7 +12,7 @@ import {
   furthestInsertion,
   nearestInsertion,
   nearestNeighbor,
-  random,
+  // random,
   randomInsertion,
   twoOptInversion,
 } from "@/solvers";
@@ -34,6 +36,7 @@ import {
   getTimeStamp,
 } from "@/store/main/selectors";
 import { useAppDispatch, useAppSelector } from "@/store/store";
+import { Check, MousePointer2 } from "lucide-react";
 import { useEffect } from "react";
 import { LngLat as LngLatType } from "react-map-gl";
 
@@ -86,7 +89,7 @@ export default function Home() {
 
   useInterval(() => {
     if (!edges[timeStamp]) {
-      dispatch(setDelay(undefined));
+      dispatch(setDelay(0));
       dispatch(setTimeStamp(0));
       dispatch(setAccumulator(undefined));
     } else {
@@ -107,8 +110,13 @@ export default function Home() {
   console.log(accumulator, edges);
 
   return (
-    <main className="h-full">
-      <div className="h-full">
+    <main className="h-full relative">
+      <div className="h-full relative">
+        <div className="absolute top-10 left-10">
+          <Button onClick={() => {}} className="bg-background/90">
+            {!isDefiningPoints ? <MousePointer2 /> : <Check />}
+          </Button>
+        </div>
         <Map onClick={onMapClick} nodes={nodes} accumulator={accumulator} />
       </div>
     </main>

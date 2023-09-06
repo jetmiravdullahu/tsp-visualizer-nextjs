@@ -6,9 +6,10 @@ export interface MainState {
   definingPoints: boolean;
   nodes: LngLatType[];
   edges: LngLatType[][];
-  delay: number | undefined;
+  delay: number;
   algorithm: keyof typeof TSP;
   timeStamp: number;
   accumulator: LngLatType[];
   distance: number;
+  bestDistance: number;
 }
