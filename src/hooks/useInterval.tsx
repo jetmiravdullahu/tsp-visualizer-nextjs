@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-function useInterval(callback: any, delay: number | null) {
+function useInterval(callback: any, delay: number = 10) {
   const savedCallback = useRef();
 
   useEffect(() => {
@@ -13,7 +13,7 @@ function useInterval(callback: any, delay: number | null) {
       savedCallback.current();
     }
 
-    if (delay !== null) {
+    if (Number.isInteger(delay)) {
       const id = setInterval(tick, delay);
       return () => clearInterval(id);
     }

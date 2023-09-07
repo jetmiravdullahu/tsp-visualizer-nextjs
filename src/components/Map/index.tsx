@@ -12,14 +12,17 @@ import { LngLat } from "mapbox-gl";
 
 import type { FeatureCollection } from "geojson";
 import { Button } from "../ui/button";
+import { IPoint } from "@/store/main/types";
+
+import "mapbox-gl/dist/mapbox-gl.css";
 
 interface Props {
-  nodes: LngLatType[];
-  accumulator: LngLatType[];
-  onClick: (node: LngLatType) => void;
+  nodes: { position: IPoint; color: number[] }[];
+  onClick: (node: IPoint) => void;
+  children?: React.ReactNode;
 }
 
-const Map: React.FC<Props> = ({ nodes, onClick, accumulator }) => {
+const Map: React.FC<Props> = ({ nodes, onClick, children }) => {
   const token =
     "pk.eyJ1IjoiamV0bWlyOTkiLCJhIjoiY2xsdzdoMXg3MjZkeDNxcGUzZTJmNTV6aiJ9.HBu2-RjAt9hkDOA2qn9kLg";
 
@@ -32,29 +35,23 @@ const Map: React.FC<Props> = ({ nodes, onClick, accumulator }) => {
     latitude: 39.8283,
     zoom: 4,
   });
-  const [edges, setEdges] = useState<LngLatType[]>([]);
-
-  useEffect(() => {
-    if (accumulator && accumulator.length > 1) {
-      setEdges(accumulator);
-    }
-  }, [accumulator]);
 
   const onClickHandler = (e: mapboxgl.MapLayerMouseEvent) => {
-    const clickedCoordinates = new LngLat(e.lngLat.lng, e.lngLat.lat);
+    // const clickedCoordinates = new LngLat(e.lngLat.lng, e.lngLat.lat);
+    const clickedCoordinates = { lng: e.lngLat.lng, lat: e.lngLat.lat };
 
     onClick(clickedCoordinates);
   };
 
-  const nodesFeatures = nodes.map((coordinates, index) => ({
+  const nodesFeatures = nodes.map(({ position, color }, index) => ({
     type: "Feature",
     geometry: {
       type: "Point",
-      coordinates: [coordinates.lng, coordinates.lat],
+      coordinates: [position.lng, position.lat],
     },
     properties: {
       id: index,
-      color: index === 0 ? "blue" : "red",
+      color,
     },
   }));
 
@@ -69,87 +66,10 @@ const Map: React.FC<Props> = ({ nodes, onClick, accumulator }) => {
     type: "circle",
     // 'source-layer': 'landuse',
     paint: {
-      "circle-radius": 4,
+      "circle-radius": 10,
       "circle-color": ["get", "color"],
     },
     source: "node",
-  };
-
-  const edgesCollection: FeatureCollection = {
-    type: "FeatureCollection",
-    features: [
-      {
-        type: "Feature",
-        geometry: {
-          type: "LineString",
-          coordinates: edges.slice(0, -1).map((edge) => [edge.lng, edge.lat]),
-        },
-        properties: {
-          color: "red",
-        },
-      },
-      {
-        type: "Feature",
-        geometry: {
-          type: "LineString",
-          coordinates: [
-            edges && [
-              edges[edges.length - 1]?.lng,
-              edges[edges.length - 1]?.lat,
-            ],
-            edges && [
-              edges[edges.length - 2]?.lng,
-              edges[edges.length - 2]?.lat,
-            ],
-          ],
-        },
-        properties: {
-          color: "blue",
-        },
-      },
-    ],
-  };
-  const lastEdgeCollection: FeatureCollection = {
-    type: "FeatureCollection",
-    features: [
-      {
-        type: "Feature",
-        geometry: {
-          type: "LineString",
-          coordinates: [
-            edges && [
-              edges[edges.length - 1]?.lng,
-              edges[edges.length - 1]?.lat,
-            ],
-            edges && [
-              edges[edges.length - 2]?.lng,
-              edges[edges.length - 2]?.lat,
-            ],
-          ],
-        },
-        properties: {},
-      },
-    ],
-  };
-
-  const edgesStyle: LineLayer = {
-    id: "line",
-    type: "line",
-    paint: {
-      "line-width": 4,
-      "line-color": ["get", "color"],
-    },
-    source: "edge",
-  };
-
-  const lastEdgeStyle: LineLayer = {
-    id: "lastEdge",
-    type: "line",
-    paint: {
-      "line-width": 4,
-      "line-color": "blue",
-    },
-    source: "lastEdge",
   };
 
   return (
@@ -166,9 +86,7 @@ const Map: React.FC<Props> = ({ nodes, onClick, accumulator }) => {
         <Layer {...nodesStyle} />
       </Source>
 
-      <Source id="edges" type="geojson" data={edgesCollection}>
-        <Layer {...edgesStyle} />
-      </Source>
+      {children}
     </MapBox>
   );
 };

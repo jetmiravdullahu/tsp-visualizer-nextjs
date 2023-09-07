@@ -1,7 +1,7 @@
 import { IPoint } from "@/store/main/types";
-import { calculateRouteCost, getDistance } from "../helpers";
-import makeSolver from "../makeSolver";
-import { pathCost } from "../cost";
+import { calculateRouteCost, getDistance } from "./helpers";
+import makeSolver from "./makeSolver";
+import { pathCost } from "./cost";
 
 export async function nearestNeighbor(points: IPoint[]) {
   console.log("points", points);

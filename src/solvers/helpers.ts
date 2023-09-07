@@ -1,70 +1,35 @@
-import { LngLat } from "mapbox-gl";
+import { IPoint } from "@/store/main/types";
 
-export const totalPathCost = (path: LngLat[]) => {
-  let distanceInMeters = 0;
+export function getDistance(city1: IPoint, city2: IPoint) {
+  const R = 6371; // radius of Earth in km
+  const dLat = toRadians(city2.lat - city1.lat);
+  const dLon = toRadians(city2.lng - city1.lng);
 
-  path.forEach((point, pointIndex) => {
-    if (pointIndex > 0) {
-      distanceInMeters += path[pointIndex - 1].distanceTo(path[pointIndex]);
-    }
-  });
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(city1.lat)) *
+      Math.cos(toRadians(city2.lat)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
 
-  return Math.round(distanceInMeters / 1000);
-};
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-export const getInsertionCost = (
-  previous: LngLat,
-  toInsert: LngLat,
-  next: LngLat
-) => {
-  const costBeforeInsertion = previous.distanceTo(next);
-
-  const costAfterInsertion =
-    previous.distanceTo(toInsert) + toInsert.distanceTo(next);
-  return costAfterInsertion - costBeforeInsertion;
-};
-
-export const computeCost = (path: LngLat[], nextPoint: LngLat) => {
-  let [bestCost, bestPointIndex]: any[] = [Infinity, null];
-
-  for (let i = 1; i < path.length; i += 1) {
-    const insertionCost = getInsertionCost(path[i - 1], nextPoint, path[i]);
-    if (insertionCost < bestCost) {
-      [bestCost, bestPointIndex] = [insertionCost, i];
-    }
-  }
-
-  return bestPointIndex;
-};
-
-export function randomIntFromInterval(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
+  return R * c; // distance in km
 }
 
-/* ============================================ */
+export function calculateRouteCost(route: IPoint[]) {
+  let total = 0;
 
-export const pathCost = (path: LngLat[]) => {
-  return path
-    .slice(0, -1)
-    .map((point, idx) => point.distanceTo(path[idx + 1]))
-    .reduce((a, b) => a + b, 0);
-};
+  for (let i = 0; i < route.length - 1; i++) {
+    const from = route[i];
+    const to = route[i + 1];
+    total += getDistance(from, to);
+  }
 
+  return total;
+}
 
-export const setDifference = (setA: any, setB: any) => {
-  const ret = new Set(setA);
-  setB.forEach((p: any) => {
-    ret.delete(p);
-  });
-  return ret;
-};
+export function toRadians(deg: number) {
+  return deg * (Math.PI / 180);
+}
 
-
-export const counterClockWise = (p: LngLat, q: LngLat, r: LngLat) => {
-  return (q.lng - p.lng) * (r.lat - q.lat) < (q.lat - p.lat) * (r.lng - q.lng);
-};
-
-export const rotateToStartingPoint = (path: LngLat[], startingPoint: LngLat) => {
-  const startIdx = path.findIndex(p => p === startingPoint);
-  path.unshift(...path.splice(startIdx, path.length));
-};
