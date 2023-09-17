@@ -8,12 +8,6 @@ import {
 import { RootState } from "../store";
 
 //
-// FOR UI
-//
-export const selectSiteInfoOpen = (state: RootState) => state.main.siteInfoOpen;
-export const selectAlgInfoOpen = (state: RootState) => state.main.algInfoOpen;
-
-//
 //  FOR SOLVER CONTROLS
 //
 export const selectAlgorithm = (state: RootState) => state.main.algorithm;
@@ -38,8 +32,8 @@ export const selectStartedRunningAt = (state: RootState) =>
 //
 // FOR POINT CONTROLS
 //
-export const selectDefiningPoints = (state: RootState) =>
-  state.main.definingPoints;
+export const selectDefiningNodes = (state: RootState) =>
+  state.main.definingNodes;
 
 export const selectPointCount = (state: RootState) => state.main.pointCount;
 
@@ -49,9 +43,9 @@ export const selectPointCount = (state: RootState) => state.main.pointCount;
 
 export const selectViewport = (state: RootState) => state.main.viewport;
 
-export const selectPoints = (state: RootState) => state.main.points;
-export const selectPointsDisplay = createSelector(selectPoints, (points) =>
-  points.map((p, idx) => ({
+export const selectNodes = (state: RootState) => state.main.nodes;
+export const selectNodesDisplay = createSelector(selectNodes, (nodes) =>
+  nodes.map((p, idx) => ({
     position: p,
     color: idx === 0 ? START_POINT_COLOR : POINT_COLOR,
   }))

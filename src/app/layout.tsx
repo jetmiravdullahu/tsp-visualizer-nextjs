@@ -2,7 +2,6 @@
 
 import "./globals.css";
 import { ReduxProvider } from "@/store/provider";
-import { useEffect } from "react";
 import { MapProvider } from "react-map-gl";
 
 export default function RootLayout({

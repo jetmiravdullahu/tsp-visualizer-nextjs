@@ -16,7 +16,7 @@ export const Edges: React.FC<Props> = ({ accumulator }) => {
             type: "Feature",
             geometry: {
               type: "LineString",
-              coordinates: edge.path.map((node) => [node.lng, node.lat]),
+              coordinates: edge.path.map((node) => [node[0], node[1]]),
             },
             properties: {
               color: edge.color,

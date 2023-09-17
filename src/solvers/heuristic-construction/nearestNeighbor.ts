@@ -1,47 +1,36 @@
 import { IPoint } from "@/store/main/types";
-import { calculateRouteCost, getDistance } from "../helpers";
-import makeSolver from "../makeSolver";
-import { pathCost } from "../cost";
+import { totalDistance, calculateDistance } from "../helpers";
 
-export async function nearestNeighbor(points: IPoint[]) {
-  console.log("points", points);
-
+export const nearestNeighbor = async (points: IPoint[]) => {
   const copy = [...points];
 
   let path = [copy.shift()] as IPoint[];
-  let cost = calculateRouteCost(path);
-
-  console.log("First path", path, cost);
+  let cost = totalDistance(path);
 
   self.setEvaluatingPaths(() => ({
     paths: [{ path }],
-    cost: pathCost(path),
+    cost: totalDistance(path),
   }));
 
   while (copy.length > 0) {
     copy.sort(
       (a, b) =>
-        getDistance(path[path.length - 1], a) -
-        getDistance(path[path.length - 1], b)
+        calculateDistance(path[path.length - 1], a) -
+        calculateDistance(path[path.length - 1], b)
     );
     path = [...path, copy.shift()!];
-    const cost = calculateRouteCost(path);
+    const cost = totalDistance(path);
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await self.sleep();
+
     self.setEvaluatingPaths(() => ({
       paths: [{ path }],
-      cost: pathCost(path),
+      cost: totalDistance(path),
     }));
   }
 
   path = [...path, path[0]];
-  cost = calculateRouteCost(path);
+  cost = totalDistance(path);
 
-  console.log("Last path", path, cost);
-  self.setEvaluatingPaths(() => ({
-    paths: [{ path }],
-    cost: pathCost(path),
-  }));
-}
-
-makeSolver(nearestNeighbor);
+  self.setBestPath(path, cost);
+};

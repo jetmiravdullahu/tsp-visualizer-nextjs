@@ -1,8 +1,7 @@
-import { TSP } from "@/solvers";
 import { LngLat as LngLatType } from "react-map-gl";
 
 export interface IMainState {
-  points: IPoint[];
+  nodes: IPoint[];
   viewport: IViewport;
   algorithm: string;
   delay: number;
@@ -22,16 +21,10 @@ export interface IMainState {
   startedRunningAt: number | null;
 
   pointCount: number;
-  definingPoints: boolean;
-
-  siteInfoOpen: boolean;
-  algInfoOpen: boolean;
+  definingNodes: boolean;
 }
 
-export interface IPoint {
-  lat: number;
-  lng: number;
-}
+export interface IPoint extends Array<number> {}
 
 export interface IViewport {
   latitude: number;

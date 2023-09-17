@@ -1,19 +1,12 @@
-import * as resolvers from "../store/main/mainSlice";
-import * as actions from "../store/main/actions";
+import { SOLVERS } from "./index";
 
-const wrapSolver =
-  (solver: any) =>
-  async (...args: any) => {
-    await solver(...args);
-    self.postMessage(resolvers.stopSolving());
-  };
+import * as resolvers from "@/store/main/mainSlice";
+import * as actions from "@/store/main/actions";
 
-export const makeSolver = (solver: any) => {
-  const run = wrapSolver(solver);
-
+export const makeSolver = () => {
   self.solverConfig = {
     detailLevel: 0,
-    delay: 10,
+    delay: 50,
     fullSpeed: false,
     paused: false,
   };
@@ -31,16 +24,6 @@ export const makeSolver = (solver: any) => {
       self.postMessage(resolvers.setEvaluatingPaths({ paths, cost }));
     }
   };
-
-  // self.setEvaluatingPath = (
-  //   getPath: () => { path: any; cost?: any },
-  //   level = 1
-  // ) => {
-  //   if (self.solverConfig.detailLevel >= level) {
-  //     const { path, cost } = getPath();
-  //     self.postMessage(resolvers.setEvaluatingPath({ path, cost }));
-  //   }
-  // };
 
   self.waitPause = async () => {
     while (self.solverConfig.paused) {
@@ -63,12 +46,14 @@ export const makeSolver = (solver: any) => {
   self.onmessage = async ({ data: action }) => {
     switch (action.type) {
       case actions.START_SOLVING:
-        console.log("start solving", action);
-
         self.solverConfig.delay = action.delay;
         self.solverConfig.detailLevel = action.evaluatingDetailLevel;
         self.solverConfig.fullSpeed = action.fullSpeed;
-        run(action.points);
+        await SOLVERS[action.algorithm as keyof typeof SOLVERS].fn(
+          action.points
+        );
+        self.postMessage(resolvers.stopSolving());
+
         break;
 
       case actions.SET_DELAY:
@@ -98,4 +83,4 @@ export const makeSolver = (solver: any) => {
   };
 };
 
-export default makeSolver;
+makeSolver();

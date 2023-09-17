@@ -16,23 +16,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-interface IOption {
+export interface IComboBoxOption {
   value: string;
   label: string;
-  children?: IOption[];
+  children?: IComboBoxOption[];
 }
 
-interface ComboProps {
-  options: IOption[];
+interface IComboboxProps {
+  options: IComboBoxOption[];
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   inputPlaceholder?: string;
   inputClass?: string;
   popoverClass?: string;
+  disabled?: boolean;
 }
 
-export const Combobox: React.FC<ComboProps> = ({
+export const Combobox: React.FC<IComboboxProps> = ({
   options,
   value,
   onChange,
@@ -40,6 +41,7 @@ export const Combobox: React.FC<ComboProps> = ({
   placeholder = "",
   inputClass,
   popoverClass,
+  disabled,
 }) => {
   const [open, setOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState<string | undefined>(
@@ -59,7 +61,7 @@ export const Combobox: React.FC<ComboProps> = ({
     for (const group of options) {
       if (group.children) {
         const label = group.children?.find(
-          (option: IOption) => option.value === value
+          (option: IComboBoxOption) => option.value === value
         )?.label;
         if (label) {
           return label;
@@ -70,12 +72,15 @@ export const Combobox: React.FC<ComboProps> = ({
         }
       }
     }
-    return placeholder
+    return placeholder;
   };
-  const renderGroupNames = (option: IOption) => {
+  const renderGroupNames = (option: IComboBoxOption) => {
     if (searchValue === undefined || searchValue === "") {
       return (
-        <div className="block select-none px-2 py-1.5 font-bold text-foreground/30">
+        <div
+          key={option.value}
+          className="block select-none px-2 py-1.5 font-bold text-foreground/30"
+        >
           {option.label}
         </div>
       );
@@ -90,7 +95,10 @@ export const Combobox: React.FC<ComboProps> = ({
 
     if (foundValue) {
       return (
-        <div className="block select-none px-2 py-1.5 font-bold text-foreground/30">
+        <div
+          key={option.value}
+          className="block select-none px-2 py-1.5 font-bold text-foreground/30"
+        >
           {option.label}
         </div>
       );
@@ -99,7 +107,7 @@ export const Combobox: React.FC<ComboProps> = ({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild disabled={disabled}>
         <Button
           variant="outline"
           role="combobox"
@@ -121,12 +129,12 @@ export const Combobox: React.FC<ComboProps> = ({
           />
           <CommandEmpty>No framework found.</CommandEmpty>
           <CommandGroup>
-            {options.map((option: IOption) => {
+            {options.map((option: IComboBoxOption) => {
               if (option.children) {
                 return (
                   <div key={option.value}>
                     {option.children.length > 0 && renderGroupNames(option)}
-                    {option.children.map((option: IOption) => (
+                    {option.children.map((option: IComboBoxOption) => (
                       <CommandItem
                         value={option.label}
                         key={option.value}
@@ -134,7 +142,7 @@ export const Combobox: React.FC<ComboProps> = ({
                           let selectedValue;
                           for (const group of options) {
                             const value = group.children?.find(
-                              (option: IOption) => {
+                              (option: IComboBoxOption) => {
                                 return (
                                   option.label.toLowerCase() === currentValue
                                 );

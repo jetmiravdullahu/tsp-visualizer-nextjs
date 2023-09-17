@@ -1,20 +1,17 @@
-/* eslint-disable no-restricted-globals */
-import makeSolver from "../makeSolver";
-import { pathCost, counterClockWise, rotateToStartingPoint } from "../cost";
+import { totalDistance, counterClockWise, rotateToStartingPoint } from "../helpers";
 import {
   EVALUATING_PATH_COLOR,
   EVALUATING_SEGMENT_COLOR,
 } from "../../constants";
 import { IPoint } from "@/store/main/types";
 
-const convexHull = async (points: IPoint[]) => {
+export const convexHull = async (points: IPoint[]) => {
   const sp = points[0];
 
   // Find the "left most point"
-
   let leftmost = points[0];
   for (const p of points) {
-    if (p.lat < leftmost.lat) {
+    if (p[1] < leftmost[1]) {
       leftmost = p;
     }
   }
@@ -29,6 +26,7 @@ const convexHull = async (points: IPoint[]) => {
 
     // find the "most counterclockwise" point
     for (let [idx, p] of points.entries()) {
+      // eslint-disable-next-line
       self.setEvaluatingPaths(
         () => ({
           paths: [
@@ -41,14 +39,12 @@ const convexHull = async (points: IPoint[]) => {
         }),
         2
       );
-
       await self.sleep();
 
       if (!selectedPoint || counterClockWise(curPoint, p, selectedPoint)) {
         // this point is counterclockwise with respect to the current hull
         // and selected point (e.g. more counterclockwise)
-        selectedIdx = idx;
-        selectedPoint = p;
+        [selectedIdx, selectedPoint] = [idx, p];
       }
     }
 
@@ -66,13 +62,13 @@ const convexHull = async (points: IPoint[]) => {
 
   self.setEvaluatingPaths(() => ({
     paths: [{ path, color: EVALUATING_PATH_COLOR }],
-    cost: pathCost(path),
+    cost: totalDistance(path),
   }));
   await self.sleep();
 
   while (points.length > 0) {
     let bestRatio = Infinity;
-    let bestPointIdx: number | null = null;
+    let bestPointIdx: number;
     let insertIdx = 0;
 
     for (let [freeIdx, freePoint] of points.entries()) {
@@ -85,8 +81,8 @@ const convexHull = async (points: IPoint[]) => {
 
         // the new cost minus the old cost
         const evalCost =
-          pathCost([pathPoint, freePoint, nextPathPoint]) -
-          pathCost([pathPoint, nextPathPoint]);
+          totalDistance([pathPoint, freePoint, nextPathPoint]) -
+          totalDistance([pathPoint, nextPathPoint]);
 
         if (evalCost < bestCost) {
           [bestCost, bestIdx] = [evalCost, pathIdx];
@@ -96,8 +92,8 @@ const convexHull = async (points: IPoint[]) => {
       // figure out how "much" more expensive this is with respect to the
       // overall length of the segment
       const nextPoint = path[(bestIdx + 1) % path.length];
-      const prevCost = pathCost([path[bestIdx], nextPoint]);
-      const newCost = pathCost([path[bestIdx], freePoint, nextPoint]);
+      const prevCost = totalDistance([path[bestIdx], nextPoint]);
+      const newCost = totalDistance([path[bestIdx], freePoint, nextPoint]);
       const ratio = newCost / prevCost;
 
       if (ratio < bestRatio) {
@@ -110,7 +106,7 @@ const convexHull = async (points: IPoint[]) => {
 
     self.setEvaluatingPaths(() => ({
       paths: [{ path }],
-      cost: pathCost(path),
+      cost: totalDistance(path),
     }));
     await self.sleep();
   }
@@ -120,7 +116,7 @@ const convexHull = async (points: IPoint[]) => {
 
   // go back home
   path.push(sp);
-  const cost = pathCost(path);
+  const cost = totalDistance(path);
 
   self.setEvaluatingPaths(() => ({
     paths: [{ path }],
@@ -129,4 +125,3 @@ const convexHull = async (points: IPoint[]) => {
   self.setBestPath(path, cost);
 };
 
-makeSolver(convexHull);

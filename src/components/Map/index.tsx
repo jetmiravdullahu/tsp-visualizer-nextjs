@@ -1,94 +1,83 @@
-"use client";
-import { useEffect, useState } from "react";
-import {
-  CircleLayer,
-  Layer,
-  LineLayer,
-  Source,
-  LngLat as LngLatType,
-  Map as MapBox,
-} from "react-map-gl";
-import { LngLat } from "mapbox-gl";
+import React from "react";
 
-import type { FeatureCollection } from "geojson";
-import { Button } from "../ui/button";
-import { IPoint } from "@/store/main/types";
+import DeckGL from "@deck.gl/react/typed";
+import { Map } from "react-map-gl";
+
+import { ScatterplotLayer, PathLayer } from "@deck.gl/layers/typed";
 
 import "mapbox-gl/dist/mapbox-gl.css";
+import { IPoint } from "@/store/main/types";
+import { useAppDispatch, useAppSelector } from "@/store/store";
+import * as selectors from "@/store/main/selectors";
+import * as reducers from "@/store/main/mainSlice";
+import { PickingInfo } from "@deck.gl/core/typed";
 
-interface Props {
-  nodes: { position: IPoint; color: number[] }[];
-  onClick: (node: IPoint) => void;
-  children?: React.ReactNode;
+interface IAccumulator {
+  path: IPoint[];
+  color: string | number[];
+  width: number;
 }
 
-const Map: React.FC<Props> = ({ nodes, onClick, children }) => {
+interface INodes {
+  position: IPoint;
+  color: number[];
+}
+
+type Props = {
+  nodes: {
+    position: number[];
+    color: number[];
+  }[];
+  accumulator: IAccumulator[];
+};
+
+export const MapComponent: React.FC<Props> = ({ accumulator, nodes }) => {
+  const dispatch = useAppDispatch();
   const token =
-    "pk.eyJ1IjoiamV0bWlyOTkiLCJhIjoiY2xsdzdoMXg3MjZkeDNxcGUzZTJmNTV6aiJ9.HBu2-RjAt9hkDOA2qn9kLg";
+    "pk.eyJ1IjoiamV0bWlyOTkiLCJhIjoiY2xtOXV5Y2dpMHBwNjNldGNsdjI2ZnI2MSJ9.2phAx2WpElYZzI5ZVKqmIQ";
 
-  const [viewState, setViewState] = useState({
-    // longitude: 20.844354,
-    // latitude: 42.543911,
-    // zoom: 8.1,
+  const isDefiningNodes = useAppSelector(selectors.selectDefiningNodes);
 
-    longitude: -98.5795,
-    latitude: 39.8283,
-    zoom: 4,
-  });
+  const INITIAL_VIEW_STATE = useAppSelector(selectors.selectViewport);
 
-  const onClickHandler = (e: mapboxgl.MapLayerMouseEvent) => {
-    // const clickedCoordinates = new LngLat(e.lngLat.lng, e.lngLat.lat);
-    const clickedCoordinates = { lng: e.lngLat.lng, lat: e.lngLat.lat };
-
-    onClick(clickedCoordinates);
-  };
-
-  const nodesFeatures = nodes.map(({ position, color }, index) => ({
-    type: "Feature",
-    geometry: {
-      type: "Point",
-      coordinates: [position.lng, position.lat],
-    },
-    properties: {
-      id: index,
-      color,
-    },
-  }));
-
-  const nodesCollection: FeatureCollection = {
-    type: "FeatureCollection",
-    //@ts-ignore
-    features: nodesFeatures,
-  };
-
-  const nodesStyle: CircleLayer = {
-    id: "point",
-    type: "circle",
-    // 'source-layer': 'landuse',
-    paint: {
-      "circle-radius": 10,
-      "circle-color": ["get", "color"],
-    },
-    source: "node",
+  const onClick = (e: PickingInfo) => {
+    isDefiningNodes && dispatch(reducers.addDefinedPoint(e.coordinate!));
   };
 
   return (
-    <MapBox
-      id="map"
-      mapboxAccessToken={token}
-      style={{ width: "100%", height: "100%" }}
-      mapStyle="mapbox://styles/jetmir99/cllwgfxz200ho01qxdexgbunn"
-      onMove={(evt) => setViewState(evt.viewState)}
-      onClick={onClickHandler}
-      {...viewState}
+    <DeckGL
+      initialViewState={INITIAL_VIEW_STATE}
+      controller={{
+        doubleClickZoom: false,
+      }}
+      layers={[
+        new ScatterplotLayer({
+          id: "scatterplot-layer",
+          data: nodes,
+          filled: true,
+          radiusScale: 2,
+          radiusMinPixels: 5,
+          getPosition: (d: any) => d.position,
+          getFillColor: (d: any) => d.color,
+        }),
+        new PathLayer({
+          id: "path-layer",
+          data: accumulator,
+          getPath: (d) => d.path,
+          getColor: (d) => d.color,
+          pickable: true,
+          widthMinPixels: 4,
+          widthMaxPixels: 8,
+        }),
+      ]}
+      onClick={onClick}
     >
-      <Source id="nodes" type="geojson" data={nodesCollection}>
-        <Layer {...nodesStyle} />
-      </Source>
-
-      {children}
-    </MapBox>
+      <Map
+        mapboxAccessToken={token}
+        // {...INITIAL_VIEW_STATE}
+        mapStyle="mapbox://styles/jetmir99/clmavy9c3017e01pjdlesb2b0"
+        // mapStyle="mapbox://styles/mapbox/light-v8"
+      />
+    </DeckGL>
   );
 };
-
-export default Map;

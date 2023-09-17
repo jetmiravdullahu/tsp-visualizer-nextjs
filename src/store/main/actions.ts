@@ -1,3 +1,5 @@
+import { SOLVERS } from "@/solvers";
+
 export const SET_VIEWPORT_STATE = "SET_VIEWPORT_STATE";
 
 export const RESET_EVALUATING_STATE = "RESET_EVALUATING_STATE";
@@ -29,13 +31,15 @@ export const TOGGLE_ALG_INFO_OPEN = "TOGGLE_ALG_INFO_OPEN";
 export const startSolvingAction = (
   points: any,
   delay: number,
-  evaluatingDetailLevel: number
+  evaluatingDetailLevel: number,
+  algorithm: keyof typeof SOLVERS
 ) => ({
   type: START_SOLVING,
   points,
   delay,
   evaluatingDetailLevel,
   fullSpeed: false,
+  algorithm,
 });
 
 export const pause = () => ({
@@ -49,4 +53,9 @@ export const unpause = () => ({
 export const setDelay = (delay: number) => ({
   type: SET_DELAY,
   delay,
+});
+
+export const setAlgorithm = (algorithm: keyof typeof SOLVERS) => ({
+  type: SET_ALGORITHM,
+  algorithm,
 });

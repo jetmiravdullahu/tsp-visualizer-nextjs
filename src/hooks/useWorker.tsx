@@ -1,31 +1,29 @@
 import { useState, useEffect } from "react";
 
-export const useSolverWorker = (onSolverMessage: any, algorithm: string) => {
-  const [solver, setSolver] = useState<Worker>();
+export const useWebWorker = (onSolverMessage: any, algorithm: string) => {
+  const [worker, setWorker] = useState<Worker>();
 
   const resetSolver = () => {
-    if (solver) {
-      solver.terminate();
+    if (worker) {
+      worker.terminate();
     }
-    const worker = new Worker(
-      new URL(
-        "../solvers/heuristic-construction/convexHull.ts",
-        import.meta.url
-      )
+
+    const workerInstance = new Worker(
+      new URL("../solvers/makeSolver.ts", import.meta.url)
     );
 
-    worker.onmessage = ({ data }) => onSolverMessage(data);
+    workerInstance.onmessage = ({ data }) => onSolverMessage(data);
 
-    worker.onerror = console.error;
+    workerInstance.onerror = console.error;
 
-    setSolver(worker);
+    setWorker(workerInstance);
   };
 
   useEffect(resetSolver, [algorithm, onSolverMessage]);
 
   const postMessage = (data: any) => {
-    if (solver) {
-      solver.postMessage(data);
+    if (worker) {
+      worker.postMessage(data);
     }
   };
 
